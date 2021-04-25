@@ -1,3 +1,4 @@
+#include <LiquidCrystal.h>
 // ============================================================ 
 //                                                              
 // Router Table Controller for GRBL                      
