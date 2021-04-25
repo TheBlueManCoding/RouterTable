@@ -22,6 +22,6 @@ Because there is no complete documentation at the moment, feel free to ask me if
 
 Used libraries:
 
-https://github.com/Jomelo/LCDMenuLib             Version 2.1.4
-https://github.com/johnrickman/LiquidCrystal_I2C Version 1.1.1
-https://playground.arduino.cc/Code/Keypad/       Version 3.1.1
+- https://github.com/Jomelo/LCDMenuLib             Version 2.1.4
+- https://github.com/johnrickman/LiquidCrystal_I2C Version 1.1.1
+- https://playground.arduino.cc/Code/Keypad/       Version 3.1.1
