@@ -5,6 +5,8 @@ This Project is a command unit for a router table:
  - control the router bit height(Z axis)
  - control the fence position (Y axis)
 
+You can find the files for the housing and some pictures here: https://www.thingiverse.com/thing:4841289
+
 You can choose which axes you want to use in the Config.h file. The software is tested with Y+Z and the Y only configuration.
 
 A grbrl board(V1.1) has to be used for for the motor axis control and configuration.
