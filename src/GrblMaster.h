@@ -254,9 +254,8 @@ public:
 		switch (axis) {
 			case Axis::Y: position = info.pos.y; return true;
 			case Axis::Z: position = info.pos.z; return true;
+			default: return false;
 		}
-		
-		return false;
 	}
 	
 	static double getPosition(Axis axis) {
@@ -383,7 +382,7 @@ public:
 		return helper.setMachinePosition(positionY, positionZ, maxCount--);
 	}
 	
-	static bool sendCommand(char* command, int timeout, bool waitForSecondAnswer, bool waitAnswer) {
+	static bool sendCommand(const char* command, int timeout, bool waitForSecondAnswer, bool waitAnswer) {
 		
 		DEBUG(command);
 		
@@ -492,8 +491,8 @@ public:
 	}
 	
 public:
-	static char* getAxisString(Axis axis) {
-		char* axisString[] = {"Y", "Z"};
+	static const char* getAxisString(Axis axis) {
+		const char* axisString[] = {"Y", "Z"};
 		return axisString[(int)axis];
 	}
 

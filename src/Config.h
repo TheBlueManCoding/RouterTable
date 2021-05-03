@@ -12,7 +12,6 @@
 //#define DEBUG_BUILD 
 //#define GRBL_DEBUG
 //#define STARTUP_SETUP
-//#define EXT_BUTTONS      // enable the additional buttons, 1 for enter, the other is unused
 #define BIG_KEYBOARD
 #define ENABLE_Z_AXIS
 

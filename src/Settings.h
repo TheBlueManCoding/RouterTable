@@ -10,7 +10,7 @@
 #include "Axis.h"
 #include <avr/eeprom.h>
 #define EEPROM_START_ADDRESS 0x00
-#define VERSION 0x03
+#define VERSION 0x04
 
 class Settings {
   struct Values {
@@ -19,7 +19,13 @@ class Settings {
 		double cutterWidth;
 		double maxTravel[(int)Axis::MAX_AXIS];
 		double backslash[(int)Axis::MAX_AXIS];
+		double cutterMaxCutDepth;
     }common;
+	
+	struct {
+		double position[(int)Axis::MAX_AXIS];
+		double offset[(int)Axis::MAX_AXIS];
+	}position;
 
     struct {
 		double fingerCount;
@@ -34,11 +40,6 @@ class Settings {
 		double cutDepth;
 		double sheetWidth;
     }dado;
-	
-	struct {
-		double position[(int)Axis::MAX_AXIS];
-		double offset[(int)Axis::MAX_AXIS];
-	}position;
   };
   
   private:
@@ -56,6 +57,7 @@ class Settings {
 		v.common.maxTravel[(int)Axis::Z] = 66.0;
 		v.common.backslash[(int)Axis::Y]  = 1;
 		v.common.backslash[(int)Axis::Z] = 1;
+		v.common.cutterMaxCutDepth = 15;
 		  	  
 		v.dado.position       = 1.0;
 		v.dado.width          = 18.0;

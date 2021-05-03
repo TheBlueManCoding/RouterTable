@@ -42,6 +42,7 @@ class RouterFenceCam {
 	 * calc the passes required for one dado of specified width and depth
 	 * 
 	 * @param routerBitWidth the width of the router bit
+	 * @param routerBitMaxDepth the maximum cutting depth for one pass
 	 * @param dado the dado
 	 * @param passes the calculated passes
 	 * @param maxPasses max. size of the pass buffer
@@ -50,16 +51,36 @@ class RouterFenceCam {
 	 * @return bool true if dado possible
 	 * @the reference is the back of the router bit(-> pass->posY = 10mm makes a groove of the router bit widt at position 10mm to e.g. 20mm)
 	 */
-	static bool calculateDadoPasses(double routerBitWidth, Dado dado, Pass passes[], int maxPasses, int& passCount) {
+	static bool calculateDadoPasses(double routerBitWidth, double routerBitMaxDepth, Dado dado, Pass passes[], int maxPasses, int& passCount) {
 
 		passCount=0;
-		passes[passCount].posZ = AS_INT(dado.depth);
 
 		// calculate first pass
 		if (dado.position == 0.0) {
-			passes[passCount++].posY = AS_INT(-routerBitWidth + 0.5);
+			// cut the small pass in full depth
+			passes[passCount].posY = AS_INT(-routerBitWidth + 0.5);
+			passes[passCount].posZ = AS_INT(dado.depth);
+			passCount++;
 		} else {
-			passes[passCount++].posY = AS_INT(dado.position);
+			
+			// calculate the number of full z passes(the last cut is the lightest pass)
+			// this is the best to use the most of your cutters life.
+			double depth = 0;
+			if (dado.depth > routerBitMaxDepth) {				
+				size_t passesZ = dado.depth / routerBitMaxDepth;
+				while(passesZ--) {
+					depth += routerBitMaxDepth;
+					passes[passCount].posY = AS_INT(dado.position);
+					passes[passCount].posZ = AS_INT(depth);
+					passCount++;
+				}				
+			}
+			
+			if(depth < dado.depth) {
+				passes[passCount].posY = AS_INT(dado.position);
+				passes[passCount].posZ = AS_INT(dado.depth);
+				passCount++;
+			}
 		}
 
 		if (dado.width < routerBitWidth) {
@@ -73,12 +94,29 @@ class RouterFenceCam {
 		double maxPassWidth = routerBitWidth;
 		double restPasses = ceil(rest / maxPassWidth); // calculate passes, round up to next full pass
 		double passWidth = rest / restPasses;
-
+		
 		// calculate passes until the full width is reached
 		while(restPasses--) {
-			passes[passCount].posY = passes[passCount-1].posY + AS_INT(passWidth);
-			passes[passCount].posZ = AS_INT(dado.depth);
-			passCount++;
+			double depth = 0;
+			double posY = passes[passCount-1].posY + AS_INT(passWidth);
+			
+			if (dado.depth > routerBitMaxDepth) {
+				// calculate the number of full z passes(the last cut is the lightest pass)
+				// this is the best to use the most of your cutters life.
+				size_t passesZ = dado.depth / routerBitMaxDepth; 			
+				while(passesZ--) {
+					depth += routerBitMaxDepth;
+					passes[passCount].posY = posY;
+					passes[passCount].posZ = AS_INT(depth);
+					passCount++;
+				}
+			}
+			
+			if(depth < dado.depth) {
+				passes[passCount].posY = posY;
+				passes[passCount].posZ = AS_INT(dado.depth);
+				passCount++;
+			}
 		}
 		return true;
 	}

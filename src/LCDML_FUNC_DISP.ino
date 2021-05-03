@@ -4,7 +4,7 @@
 *                                                                       *
 * ===================================================================== **/
 #include "Textfield.h"
-#include "RouterFenceCam.h"
+#include "RouterTableCam.h"
 #include "GrblMaster.h"
 #include "Config.h"
 
@@ -475,8 +475,8 @@ void doDados(RouterFenceCam::Dado dados[], int dadoCount, int dadoMaxCount, doub
 				
 		if (calcNextDado) {		// calc passes for dado			
 			passCount = 0;
-			calcNextDado=true;
-			if(!RouterFenceCam::calculateDadoPasses(Settings::values().common.cutterWidth, dados[activeDado],
+			calcNextDado=true; 
+			if(!RouterFenceCam::calculateDadoPasses(Settings::values().common.cutterWidth, Settings::values().common.cutterMaxCutDepth, dados[activeDado],
 				passes, sizeof(passes)/sizeof(double), passCount)) {
 				lines[1].clear();
 				messageBox(PSTR("failed calc dado"), 0);
@@ -582,6 +582,11 @@ void LCDML_DISP_loop(LCDML_FUNC_dado)
 		return;
 	}
 	
+	lines[0].setText_P(PSTR("cut depth/pass?"));
+	if(!scanNumber(Settings::values().common.cutterMaxCutDepth, 0, Settings::values().common.maxTravel[(int)Axis::Z])) {
+		return;
+	}
+	
 	lines[0].setText_P(PSTR("dado position?"));
 	if(!scanNumber(Settings::values().dado.position, 0, Settings::values().common.maxTravel[(int)Axis::Y * 2])) { // because we can cut from both sides
 		return;
@@ -630,6 +635,11 @@ void LCDML_DISP_loop(LCDML_FUNC_finger_joint_setup)
 	
 	lines[0].setText_P(PSTR("finger length?"));
 	if(!scanNumber(Settings::values().fingerJoint.cutDepth, 0, Settings::values().common.maxTravel[(int)Axis::Z])) {
+		return;
+	}
+	
+	lines[0].setText_P(PSTR("cut depth/pass?"));
+	if(!scanNumber(Settings::values().common.cutterMaxCutDepth, 0, Settings::values().common.maxTravel[(int)Axis::Z])) {
 		return;
 	}
 	Settings::save();
