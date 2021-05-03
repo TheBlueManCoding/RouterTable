@@ -1,5 +1,6 @@
 # RouterTable
 CAUTION: This project only builds in VisualMicro plugin for Atmel Studio at the moment.
+         For prebuild versions take a look into the bin folder. if you miss a configuration i can add it.
 
 This Project is a command unit for a router table:
  - control the router bit height(Z axis)
@@ -28,3 +29,14 @@ Used libraries:
 - https://github.com/Jomelo/LCDMenuLib             Version 2.1.4
 - https://github.com/johnrickman/LiquidCrystal_I2C Version 1.1.1
 - https://playground.arduino.cc/Code/Keypad/       Version 3.1.1
+
+## Finished router table Version 1
+This version is only a moving fence and follows the example of the Ready2Rout router fence: https://www.rockler.com/ready2rout-the-first-ever-electronic-router-fence
+It was my inspiration when i started this project - because i couldn't buy it in germany.
+The price and mechanical effort for this version is low - but it needs much space behind the router table.
+
+Images will come up soon after the rebuild of the electronics.
+
+## Finished router table Version 2
+![RouterTable V2](https://github.com/TheBlueManCoding/RouterTable/blob/master/doc/Images/RouterTableV2-Complete.JPG)
+
