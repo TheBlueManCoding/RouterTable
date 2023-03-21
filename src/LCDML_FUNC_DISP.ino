@@ -144,18 +144,18 @@ void doManualPositioning(Axis axis, bool canChangeAxis, bool exitOnEnter) {
 				helper.printPosition(axis);
 			}
 #endif	
-
-#ifdef BUTTON_F2
-			if (lastKey == BUTTON_F2) {
-				lastKey = NO_KEY;
-				if(messageBox(PSTR("zero axis?"), 1)) {
-					GrblMaster::setPosition(axis, 0.0);
-					position = GrblMaster::getPosition(axis);
-				}
-				helper.printPosition(axis);
-			}
-#endif	
 		}
+		
+#ifdef BUTTON_F2
+		if (lastKey == BUTTON_F2) {
+			lastKey = NO_KEY;
+			if(messageBox(PSTR("zero axis?"), 1)) {
+				GrblMaster::setPosition(axis, 0.0);
+				position = GrblMaster::getPosition(axis);
+			}
+			helper.printPosition(axis);
+		}
+#endif
 
 		if(lastKey >= '-') {
 			// dont erase key, pass it to the scanner!
@@ -632,7 +632,7 @@ void LCDML_DISP_loop(LCDML_FUNC_finger_joint_setup)
 	if(!scanNumber(Settings::values().fingerJoint.sheetWidth, 0, Settings::values().common.maxTravel[(int)Axis::Y] * 2)) { // because we can cut from both sides
 		return;
 	}
-	
+#ifdef ENABLE_Z_AXIS
 	lines[0].setText_P(PSTR("finger length?"));
 	if(!scanNumber(Settings::values().fingerJoint.cutDepth, 0, Settings::values().common.maxTravel[(int)Axis::Z])) {
 		return;
@@ -642,6 +642,10 @@ void LCDML_DISP_loop(LCDML_FUNC_finger_joint_setup)
 	if(!scanNumber(Settings::values().common.cutterMaxCutDepth, 0, Settings::values().common.maxTravel[(int)Axis::Z])) {
 		return;
 	}
+#else
+	// only add dummy values to satisfy the calculation tool
+	Settings::values().fingerJoint.cutDepth = Settings::values().common.cutterMaxCutDepth = 1.0;
+#endif
 	Settings::save();
 	
 	LCDML_DISP_funcend();
@@ -663,6 +667,11 @@ void LCDML_DISP_loop(LCDML_FUNC_finger_joint_male)
 		Settings::values().fingerJoint.clearanceWidth, Settings::values().fingerJoint.cutDepth, Settings::values().fingerJoint.fingerCount, 
 		dados, MAX_FINGERS, dadoCount)) {
 		doDados(dados, dadoCount, MAX_FINGERS, Settings::values().fingerJoint.sheetWidth);
+	} else {
+		lines[0].setText_P(PSTR("err calc fingers"));
+		delay(1000);
+		LCDML_DISP_funcend();
+		return;
 	}
 }
 
@@ -681,6 +690,11 @@ void LCDML_DISP_loop(LCDML_FUNC_finger_joint_female)
 	if (RouterFenceCam::calculateFingerGrooves(false, Settings::values().common.cutterWidth, Settings::values().fingerJoint.sheetWidth,
 		Settings::values().fingerJoint.clearanceWidth, Settings::values().fingerJoint.cutDepth, Settings::values().fingerJoint.fingerCount, dados, MAX_FINGERS, dadoCount)) {
 		doDados(dados, dadoCount, MAX_FINGERS, Settings::values().fingerJoint.sheetWidth);
+	} else {
+		lines[0].setText_P(PSTR("err calc fingers"));
+		delay(1000);
+		LCDML_DISP_funcend();
+		return;
 	}
 }
 
