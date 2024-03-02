@@ -7,6 +7,7 @@
 #include "RouterTableCam.h"
 #include "GrblMaster.h"
 #include "Config.h"
+#include "GlobalInstances.h"
 
 bool messageBox(PROGMEM const char* message, int line) {
   lines[line].setText_P(message);
@@ -113,7 +114,7 @@ void doManualPositioning(Axis axis, bool canChangeAxis, bool exitOnEnter) {
 	
 	struct Helper {
 		void printPosition(Axis axis) {
-			lines[1].setText(GrblMaster::getAxisString(axis));
+			lines[1].setText((char*)GrblMaster::getAxisString(axis));
 			lines[1].appendText_P(PSTR(": "));
 			lines[1].appendNumber(GrblMaster::getPosition(axis));
 		}

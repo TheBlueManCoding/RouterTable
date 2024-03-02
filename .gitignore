@@ -4,3 +4,5 @@ RouterFence.componentinfo.xml
 RouterFence.atsln
 RouterTable.cppproj
 RouterTable.componentinfo.xml
+/.pio/
+/.vscode

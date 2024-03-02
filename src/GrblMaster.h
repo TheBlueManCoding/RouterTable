@@ -152,7 +152,7 @@ public:
 	}
 	
 	static bool stopJog() {
-		char resetCommand[] = {0x85, 0x00};
+		char resetCommand[] = {(char)0x85, (char)0x00};
 		if(sendCommand(resetCommand, 1000, true, true)) {
 			GrblInfo info;
 			if (!getInfo(info)) {
@@ -160,7 +160,7 @@ public:
 			}
 			
 			// restore real position for the case we stopped the moving
-			setMPos(Axis::Y, info.pos.y, false);
+			setMPos(Axis::Y, info.pos.y, false); 
 			setMPos(Axis::Z, info.pos.z, true);
 		}
 		
