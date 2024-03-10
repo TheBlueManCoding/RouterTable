@@ -55,6 +55,10 @@ class RouterFenceCam {
 
 		passCount=0;
 
+		if (routerBitWidth == 0) {
+			return false;
+		}
+
 		// calculate first pass
 		if (dado.position == 0.0) {
 			// cut the small pass in full depth
@@ -125,6 +129,10 @@ class RouterFenceCam {
 				double depth, int numberOfFingers, Dado grooves[], int maxGrooves, int& groovesCount) {
 		groovesCount  = 0;
 
+		if (routerBitWidth == 0) {
+			return false;
+		}
+
 		double fingerWidth = sheetWidth / numberOfFingers;
 
 		if (fingerWidth < routerBitWidth) {
@@ -162,7 +170,11 @@ class RouterFenceCam {
 	 * @param maxGrooves        the max number grooves
 	 * @return @return true if calculation was possible and the cuts are valid
 	 */
-	static int calcDadosReversedOrder(double sheetWidth, double maxTravel, double routerBitWidth, Dado grooves[], int& groovesCount, int maxGrooves) {
+	static bool calcDadosReversedOrder(double sheetWidth, double maxTravel, double routerBitWidth, Dado grooves[], int& groovesCount, int maxGrooves) {
+
+		if (routerBitWidth == 0) {
+			return false;
+		}
 
 		for (int i=0; i<groovesCount; i++) {
 			Dado dadosReversed[2];
@@ -207,6 +219,10 @@ class RouterFenceCam {
 	 */
 	static bool calcDadoReversedOrder(double sheetWidth, double maxTravel, double routerBitWidth, Dado originalDado, Dado dadosReversed[2], int& reversedDadoCount) {
 
+		if (routerBitWidth == 0) {
+			return false;
+		}
+		
 		double firstPosition = originalDado.position;
 		double lastPosition = originalDado.position + originalDado.width;
 

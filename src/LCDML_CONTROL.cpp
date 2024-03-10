@@ -45,15 +45,7 @@ void LCDML_BACK_stable(LCDML_BACKEND_control)
   #ifdef BIG_KEYBOARD
     const byte ROWS = 5; 
     const byte COLS = 4;
-	#define BUTTON_F1     '<'
-	#define BUTTON_F2     '>'
-	#define BUTTON_UP     'u'
-	#define BUTTON_DOWN   'd'
-	#define BUTTON_LEFT   'l'
-	#define BUTTON_RIGHT  'r'
-	#define BUTTON_ESC    'e'
-	#define BUTTON_ENTER  '\n'
-	
+
     char keys[ROWS][COLS] = {
 	    {'<','>','-','.'},
 	    {'1','2','3','u'},
@@ -67,12 +59,6 @@ void LCDML_BACK_stable(LCDML_BACKEND_control)
   #else
 	const byte ROWS = 4; //four rows
 	const byte COLS = 3; //three columns
-	#define BUTTON_UP     'u'
-	#define BUTTON_DOWN   'd'
-	#define BUTTON_LEFT   'l'
-	#define BUTTON_RIGHT  'r'
-	#define BUTTON_ESC    'e'
-	#define BUTTON_ENTER  '\n'
 	
 	char keys[ROWS][COLS] = {
 		{'1','2','3'},

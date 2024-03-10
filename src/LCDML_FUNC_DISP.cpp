@@ -26,6 +26,15 @@ bool messageBox(PROGMEM const char* message, int line) {
   }
 }
 
+bool checkCriticalParameters() {
+	if(Settings::values().common.cutterWidth == 0) {
+		messageBox(PSTR("set up cutter!"), 0);
+		return false;
+	}
+
+	return true;
+}
+
 void printPassAndPosition(int activeDado, int dadoCount, int activePass, int passCount, double positionY, double positionZ, bool invertedPosition) {
 	
 	char buffer[20];
@@ -96,7 +105,6 @@ void waitEnter() {
 	while(1) {
 		LCDML_CONTROL_loop();
 		
-		
 		if (LCDML_BUTTON_checkEnter()) {
 			LCDML_BUTTON_resetEnter();
 		}
@@ -127,7 +135,7 @@ void doManualPositioning(Axis axis, bool canChangeAxis, bool exitOnEnter) {
 		double increment = 0;
 		
 		if(canChangeAxis) {
-#ifdef BUTTON_F1
+#ifdef ENABLE_BUTTON_F1
 		if (lastKey == BUTTON_F1 && axis == Axis::Z) {
 				axis = Axis::Y;
 				lastKey = NO_KEY;
@@ -136,7 +144,7 @@ void doManualPositioning(Axis axis, bool canChangeAxis, bool exitOnEnter) {
 				helper.printPosition(axis);
 			}
 #endif
-#ifdef BUTTON_F1
+#ifdef ENABLE_BUTTON_F1
 			if (lastKey == BUTTON_F1 && axis == Axis::Y) {
 				axis = Axis::Z;
 				lastKey = NO_KEY;
@@ -147,7 +155,7 @@ void doManualPositioning(Axis axis, bool canChangeAxis, bool exitOnEnter) {
 #endif	
 		}
 		
-#ifdef BUTTON_F2
+#ifdef ENABLE_BUTTON_F2
 		if (lastKey == BUTTON_F2) {
 			lastKey = NO_KEY;
 			if(messageBox(PSTR("zero axis?"), 1)) {
@@ -328,7 +336,10 @@ void LCDML_DISP_loop(LCDML_FUNC_change_cutter)
 	}
 	
 	// go to zero position
+	#ifdef ENABLE_Z_AXIS	
 	GrblMaster::gotoPositionRaw(Axis::Z, 0);
+	#endif
+
 	GrblMaster::gotoPositionRaw(Axis::Y, 0);		
 	
 	// unlock spindle
@@ -353,24 +364,28 @@ void LCDML_DISP_loop(LCDML_FUNC_setup_values)
 	
 	lines[0].setText_P(PSTR("backslash Y?"));
 	if(!scanNumber(Settings::values().common.backslash[(int)Axis::Y], 0, 5)) {
+		LCDML_DISP_funcend();
 		return;
 	}
 	
 #ifdef ENABLE_Z_AXIS
 	lines[0].setText_P(PSTR("backslash Z?"));
 	if(!scanNumber(Settings::values().common.backslash[(int)Axis::Z], 0, 5)) {
+		LCDML_DISP_funcend();
 		return;
 	}
 #endif
 
 	lines[0].setText_P(PSTR("max travel Y?"));
 	if(!scanNumber(Settings::values().common.maxTravel[(int)Axis::Y], 0, 2000)) {
+		LCDML_DISP_funcend();
 		return;
 	}
 	
 #ifdef ENABLE_Z_AXIS
 	lines[0].setText_P(PSTR("max travel Z?"));
 	if(!scanNumber(Settings::values().common.maxTravel[(int)Axis::Z], 0, 100)) {
+		LCDML_DISP_funcend();
 		return;
 	}
 #endif
@@ -380,22 +395,26 @@ void LCDML_DISP_loop(LCDML_FUNC_setup_values)
 #ifdef ENABLE_Z_AXIS
 	lines[0].setText_P(PSTR("offset Z"));
 	if(!scanNumber(Settings::values().position.offset[(int)Axis::Z], -1000, 1000)) {
+		LCDML_DISP_funcend();
 		return;
 	}
 	
 	lines[0].setText_P(PSTR("mPos Z"));
 	if(!scanNumber(Settings::values().position.position[(int)Axis::Z], 0, 1000)) {
+		LCDML_DISP_funcend();
 		return;
 	}
 #endif
 
 	lines[0].setText_P(PSTR("offset Y?"));
 	if(!scanNumber(Settings::values().position.offset[(int)Axis::Y], -1000, 1000)) {
+		LCDML_DISP_funcend();
 		return;
 	}
 	
 	lines[0].setText_P(PSTR("mPos Y?"));
 	if(!scanNumber(Settings::values().position.position[(int)Axis::Y], 0, 1000)) {
+		LCDML_DISP_funcend();
 		return;
 	}
 #endif
@@ -496,6 +515,8 @@ void doDados(RouterFenceCam::Dado dados[], int dadoCount, int dadoMaxCount, doub
 					activePass++;
 					printPassAndPosition(activeDado, dadoCount, activePass, passCount, AS_DOUBLE(passes[activePass].posY) + Settings::values().common.cutterWidth, AS_DOUBLE(passes[activePass].posZ), dados[activeDado].reversedOrder);
 				}
+			} else {
+				lines[1].setText("position error");	
 			}
 		}
 	}
@@ -511,7 +532,9 @@ void LCDML_DISP_setup(LCDML_FUNC_shutdown)
 
 void LCDML_DISP_loop(LCDML_FUNC_shutdown)
 {
+	#ifdef ENABLE_Z_AXIS	
 	GrblMaster::gotoPositionRaw(-10.0, GrblMaster::getPosition(Axis::Z), true);
+	#endif
 	GrblMaster::gotoPositionRaw(GrblMaster::getPosition(Axis::Y), -10.0, true);
 
 	LCDML_DISP_funcend();
@@ -527,6 +550,11 @@ void LCDML_DISP_setup(LCDML_FUNC_manual)
 
 void LCDML_DISP_loop(LCDML_FUNC_manual)
 {
+	if(!checkCriticalParameters()) {
+		LCDML_DISP_funcend();
+		return;
+	}
+
 	#ifdef ENABLE_Z_AXIS
 	lines[0].setText_P(PSTR("select position"));
 	doManualPositioning(Axis::Z, true, false);
@@ -552,8 +580,10 @@ void LCDML_DISP_loop(LCDML_FUNC_homing_and_reset_position)
 		GrblMaster::homing();
 		
 		GrblMaster::setMachinePosition(Settings::values().common.maxTravel[(int)Axis::Y], 0);
-		GrblMaster::setPosition(Axis::Y, Settings::values().common.maxTravel[(int)Axis::Y]);
+		#ifdef ENABLE_Z_AXIS	
 		GrblMaster::setPosition(Axis::Z, 0);
+		#endif
+		GrblMaster::setPosition(Axis::Y, Settings::values().common.maxTravel[(int)Axis::Y]);
 	}
 	
 	if(messageBox(PSTR("goto zero?"), 1)) {
@@ -573,28 +603,43 @@ void LCDML_DISP_setup(LCDML_FUNC_dado)
 
 void LCDML_DISP_loop(LCDML_FUNC_dado)
 {	
+	if(!checkCriticalParameters()) {
+		LCDML_DISP_funcend();
+		return;
+	}
+
 	lines[0].setText_P(PSTR("dado width?"));
 	if(!scanNumber(Settings::values().dado.width, 0, 100)) {
+		LCDML_DISP_funcend();
 		return;
 	}
 	
+#ifdef ENABLE_Z_AXIS
 	lines[0].setText_P(PSTR("dado depth?"));
 	if(!scanNumber(Settings::values().dado.cutDepth, 0, Settings::values().common.maxTravel[(int)Axis::Z])) {
+		LCDML_DISP_funcend();
 		return;
 	}
 	
 	lines[0].setText_P(PSTR("cut depth/pass?"));
 	if(!scanNumber(Settings::values().common.cutterMaxCutDepth, 0, Settings::values().common.maxTravel[(int)Axis::Z])) {
+		LCDML_DISP_funcend();
 		return;
 	}
-	
+#else
+	// only add dummy values to satisfy the calculation tool
+	Settings::values().dado.cutDepth = Settings::values().common.cutterMaxCutDepth = 1.0;
+#endif
+
 	lines[0].setText_P(PSTR("dado position?"));
 	if(!scanNumber(Settings::values().dado.position, 0, Settings::values().common.maxTravel[(int)Axis::Y * 2])) { // because we can cut from both sides
+		LCDML_DISP_funcend();
 		return;
 	}
 	
 	lines[0].setText_P(PSTR("sheet width?"));
 	if(!scanNumber(Settings::values().dado.sheetWidth, 0, Settings::values().common.maxTravel[(int)Axis::Y * 2])) {
+		LCDML_DISP_funcend();
 		return;
 	}
 	Settings::save();
@@ -621,26 +666,31 @@ void LCDML_DISP_loop(LCDML_FUNC_finger_joint_setup)
 {
 	lines[0].setText_P(PSTR("finger count?"));
 	if(!scanNumber(Settings::values().fingerJoint.fingerCount, 0, 60)) {
+		LCDML_DISP_funcend();
 		return;
 	}
 	
 	lines[0].setText_P(PSTR("clearance width?"));
 	if(!scanNumber(Settings::values().fingerJoint.clearanceWidth, 0, 10)) {
+		LCDML_DISP_funcend();
 		return;
 	}
 	
 	lines[0].setText_P(PSTR("sheet width?"));
 	if(!scanNumber(Settings::values().fingerJoint.sheetWidth, 0, Settings::values().common.maxTravel[(int)Axis::Y] * 2)) { // because we can cut from both sides
+		LCDML_DISP_funcend();
 		return;
 	}
 #ifdef ENABLE_Z_AXIS
 	lines[0].setText_P(PSTR("finger length?"));
 	if(!scanNumber(Settings::values().fingerJoint.cutDepth, 0, Settings::values().common.maxTravel[(int)Axis::Z])) {
+		LCDML_DISP_funcend();
 		return;
 	}
 	
 	lines[0].setText_P(PSTR("cut depth/pass?"));
 	if(!scanNumber(Settings::values().common.cutterMaxCutDepth, 0, Settings::values().common.maxTravel[(int)Axis::Z])) {
+		LCDML_DISP_funcend();
 		return;
 	}
 #else
@@ -662,6 +712,11 @@ void LCDML_DISP_setup(LCDML_FUNC_finger_joint_male)
 #define MAX_FINGERS 15
 void LCDML_DISP_loop(LCDML_FUNC_finger_joint_male)
 {
+	if(!checkCriticalParameters()) {
+		LCDML_DISP_funcend();
+		return;
+	}
+
 	RouterFenceCam::Dado dados[MAX_FINGERS];
 	int dadoCount = 0;
 	if (RouterFenceCam::calculateFingerGrooves(true, Settings::values().common.cutterWidth, Settings::values().fingerJoint.sheetWidth,
@@ -674,6 +729,8 @@ void LCDML_DISP_loop(LCDML_FUNC_finger_joint_male)
 		LCDML_DISP_funcend();
 		return;
 	}
+
+	LCDML_DISP_funcend();
 }
 
 void LCDML_DISP_loop_end(LCDML_FUNC_finger_joint_male) {}
@@ -686,6 +743,11 @@ void LCDML_DISP_setup(LCDML_FUNC_finger_joint_female)
 
 void LCDML_DISP_loop(LCDML_FUNC_finger_joint_female)
 {
+	if(!checkCriticalParameters()) {
+		LCDML_DISP_funcend();
+		return;
+	}
+
 	RouterFenceCam::Dado dados[MAX_FINGERS];
 	int dadoCount = 0;
 	if (RouterFenceCam::calculateFingerGrooves(false, Settings::values().common.cutterWidth, Settings::values().fingerJoint.sheetWidth,
@@ -697,6 +759,8 @@ void LCDML_DISP_loop(LCDML_FUNC_finger_joint_female)
 		LCDML_DISP_funcend();
 		return;
 	}
+
+	LCDML_DISP_funcend();
 }
 
 void LCDML_DISP_loop_end(LCDML_FUNC_finger_joint_female) {}

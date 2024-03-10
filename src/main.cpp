@@ -82,7 +82,7 @@ void setup()
     ;                   // wait until serial ready
   Serial.begin(115200); // start serial
 
-  DEBUGP("startup");
+  DEBUG("startup");
   // LCD Begin
   lcd.init();
   lcd.backlight();
