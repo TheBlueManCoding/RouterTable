@@ -1,6 +1,5 @@
 # RouterTable
-CAUTION: This project only builds in VisualMicro plugin for Atmel Studio at the moment.
-         For prebuild versions take a look into the bin folder. if you miss a configuration i can add it.
+Note: The project builds with vsCode
 
 This Project is a command unit for a router table:
  - control the router bit height(Z axis)
